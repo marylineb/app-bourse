@@ -6,6 +6,10 @@
     let profitLossChart = null;
     let candlestickChart = null;
 
+    // Un ticker boursier ne contient que des lettres, chiffres, points et tirets.
+    // Cette vérification empêche d'injecter du HTML via le champ de saisie.
+    const TICKER_PATTERN = /^[A-Z0-9.-]{1,10}$/;
+
     // ---- AU CHARGEMENT ----
     window.addEventListener("load", () => {
       loadStocks();
@@ -17,8 +21,8 @@
       e.preventDefault();
 
       const ticker = document.getElementById("ticker").value.trim().toUpperCase();
-      if (!ticker) {
-        alert("Veuillez entrer un ticker (ex: AAPL)");
+      if (!TICKER_PATTERN.test(ticker)) {
+        alert("Ticker invalide : 1 à 10 lettres, chiffres, points ou tirets (ex : AAPL)");
         return;
       }
 
@@ -267,7 +271,7 @@
       try {
         const data = window.localStorage.getItem("stocks");
         if (data) {
-          stocks = JSON.parse(data);
+          stocks = JSON.parse(data).filter((s) => TICKER_PATTERN.test(String(s.ticker)));
         }
       } catch (e) {
         console.error("Erreur chargement:", e);
@@ -284,7 +288,7 @@
     // ---- STOOQ API ----
     async function loadStooqData() {
       const ticker = document.getElementById("ticker").value.trim().toUpperCase();
-      if (!ticker) return alert("Entrez un ticker");
+      if (!TICKER_PATTERN.test(ticker)) return alert("Ticker invalide (ex : AAPL)");
 
       const url = `https://stooq.com/q/d/l/?s=${ticker.toLowerCase()}.us&i=d`;
 
